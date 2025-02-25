@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { View, Image, StyleSheet, Text, Alert } from "react-native";
-import { homeFeed } from "../../placeholder";
+import { favoritesFeed } from "../../placeholder";
 import { FlashList } from "@shopify/flash-list";
 import {
   GestureHandlerRootView,
@@ -55,7 +55,7 @@ export default function Page() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <FlashList
-        data={homeFeed}
+        data={favoritesFeed}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         estimatedItemSize={300}
