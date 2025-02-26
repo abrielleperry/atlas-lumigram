@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,23 +9,48 @@ import {
   Dimensions,
 } from "react-native";
 import { profileFeed } from "../../../placeholder";
+import { useRouter, useGlobalSearchParams } from "expo-router";
 
 const numColumns = 3;
 const screenWidth = Dimensions.get("window").width;
 const imageSize = screenWidth / numColumns;
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  const params = useGlobalSearchParams();
+
   const [profile, setProfile] = useState({
     username: profileFeed[0].createdBy,
     profileImage: profileFeed[0].image,
   });
 
+  useEffect(() => {
+    if (params.username && params.profileImage) {
+      setProfile({
+        username: params.username as string,
+        profileImage: params.profileImage as string,
+      });
+    }
+  }, [params]);
+
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: profile.profileImage }}
-        style={styles.profileImage}
-      />
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/profile/edit",
+            params: {
+              username: profile.username,
+              profileImage: profile.profileImage,
+            },
+          })
+        }
+      >
+        <Image
+          source={{ uri: profile.profileImage }}
+          style={styles.profileImage}
+        />
+      </TouchableOpacity>
 
       <Text style={styles.username}>{profile.username}</Text>
 
