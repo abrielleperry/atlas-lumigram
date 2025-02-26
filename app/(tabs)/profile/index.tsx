@@ -15,7 +15,7 @@ const numColumns = 3;
 const screenWidth = Dimensions.get("window").width;
 const imageSize = screenWidth / numColumns;
 
-export default function ProfileScreen() {
+export default function Page() {
   const router = useRouter();
   const params = useGlobalSearchParams();
 

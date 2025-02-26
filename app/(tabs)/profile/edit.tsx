@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 
-export default function EditProfileScreen() {
+export default function Page() {
   const router = useRouter();
   const { username: initialUsername, profileImage: initialProfileImage } =
     useLocalSearchParams();
