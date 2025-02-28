@@ -7,6 +7,7 @@ import {
   TapGestureHandler,
   LongPressGestureHandler,
 } from "react-native-gesture-handler";
+import { useAuth } from "@/components/AuthProvider";
 
 interface FeedItem {
   id: string;
@@ -48,12 +49,14 @@ const ImageItem = ({ item }: { item: FeedItem }) => {
   );
 };
 export default function HomeScreen() {
+  const auth = useAuth();
   const renderItem = ({ item }: { item: FeedItem }) => {
     return <ImageItem item={item} />;
   };
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      <Text>Welcome {auth.user?.email}</Text>
       <FlashList
         data={homeFeed}
         renderItem={renderItem}

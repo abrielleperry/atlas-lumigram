@@ -1,8 +1,28 @@
 import { Text, View, TextInput, Pressable, StyleSheet } from "react-native";
-import { Link, router, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/components/AuthProvider";
+import { useState } from "react";
+import Loading from "@/components/Loading";
 
 export default function Page() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const auth = useAuth();
+
+  async function login() {
+    setLoading(true);
+    try {
+      await auth.login(email, password);
+      router.replace("/(tabs)");
+    } catch (err) {
+      alert("Email or password is incorrect");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.atlasSchoolContainer}>
@@ -14,17 +34,18 @@ export default function Page() {
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="#FFFFFF"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         placeholderTextColor="#FFFFFF"
         secureTextEntry
+        value={password}
+        onChangeText={setPassword}
       />
-      <Pressable
-        style={styles.signInButton}
-        onPress={() => router.replace("/(tabs)")}
-      >
+      <Pressable style={styles.signInButton} onPress={login}>
         <Text style={styles.signInText}>Sign In</Text>
       </Pressable>
 
@@ -34,7 +55,7 @@ export default function Page() {
       >
         <Text style={styles.newAccountText}>Create a new account</Text>
       </Pressable>
-
+      {loading && <Loading />}
       {/*
       <Link href="/register" replace>
         <Text>Create a new account</Text>

@@ -1,11 +1,14 @@
 import { Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { IconSymbol } from "./ui/IconSymbol.ios";
+import { useAuth } from "./AuthProvider";
 
 export function LogoutComponent() {
   const router = useRouter();
+  const auth = useAuth();
 
-  function logout() {
+  async function logout() {
+    await auth.logout();
     router.replace("/login");
   }
 
