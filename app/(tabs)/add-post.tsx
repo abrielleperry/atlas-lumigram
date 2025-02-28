@@ -4,11 +4,34 @@ import Loading from "@/components/Loading";
 import ImagePreview from "@/components/ImagePreview";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import storage from "@/lib/storage";
+import firestore from "@/lib/firestore";
+import { getDownloadURL } from "firebase/storage";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function Page() {
+  const auth = useAuth();
   const [caption, setCaption] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { image, openImagePicker, reset } = useImagePicker();
+
+  async function save() {
+    if (!image) return;
+    setLoading(true);
+    const name = image?.split("/").pop() as string;
+    const { downloadUrl, metadata } = await storage.upload(image, name);
+    console.log(downloadUrl);
+
+    firestore.addPost({
+      caption,
+      image: downloadUrl,
+      createdAt: new Date(),
+      createdBy: auth.user?.uid!!,
+    });
+
+    setLoading(false);
+    alert("Post added");
+  }
 
   return (
     <View style={styles.container}>
@@ -29,7 +52,7 @@ export default function Page() {
               value={caption}
               onChangeText={setCaption}
             />
-            <Pressable style={styles.saveButton} onPress={() => alert("Saved")}>
+            <Pressable style={styles.saveButton} onPress={save}>
               <Text style={styles.saveText}>Save</Text>
             </Pressable>
             <Pressable
