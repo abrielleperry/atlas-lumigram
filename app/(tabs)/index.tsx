@@ -140,8 +140,6 @@ export default function HomeScreen() {
         ...doc.data(),
       })) as FeedItem[];
 
-      console.log("Fetched Posts:", newPosts);
-
       setPosts((prevPosts) => {
         const updatedPosts = reset ? newPosts : [...prevPosts, ...newPosts];
 
