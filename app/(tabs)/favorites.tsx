@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 300,
+    height: 390,
     borderRadius: 10,
   },
   captionContainer: {

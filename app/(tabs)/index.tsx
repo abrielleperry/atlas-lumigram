@@ -181,31 +181,28 @@ export default function HomeScreen() {
       <View style={styles.greeting}>
         <Text style={styles.welcome}>Welcome,</Text>
         <Text style={styles.user}>
-          {auth.user?.email.split("@")[0].charAt(0).toUpperCase() +
-            auth.user?.email.split("@")[0].slice(1)}
+          {auth.user!.email.split("@")[0].charAt(0).toUpperCase() +
+            auth.user!.email.split("@")[0].slice(1)}
           !
         </Text>
       </View>
-      {firstLoad ? (
-        <Loading />
-      ) : (
-        <FlashList
-          data={posts}
-          renderItem={({ item }) => <ImageItem item={item} />}
-          keyExtractor={(item) => item.id}
-          extraData={posts}
-          estimatedItemSize={800}
-          removeClippedSubviews={false}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.3}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchPosts(true)}
-            />
-          }
-        />
-      )}
+
+      <FlashList
+        data={posts}
+        renderItem={({ item }) => <ImageItem item={item} />}
+        keyExtractor={(item) => item.id}
+        extraData={posts}
+        estimatedItemSize={800}
+        removeClippedSubviews={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchPosts(true)}
+          />
+        }
+      />
     </GestureHandlerRootView>
   );
 }
@@ -223,7 +220,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 300,
+    height: 390,
     borderRadius: 10,
   },
   captionContainer: {
@@ -235,6 +232,7 @@ const styles = StyleSheet.create({
   captionText: {
     color: "white",
     textAlign: "center",
+    fontSize: 20,
   },
   greeting: {
     flexDirection: "row",

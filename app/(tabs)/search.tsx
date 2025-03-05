@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -9,13 +9,61 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { userSearch } from "../../placeholder";
+import { db } from "@/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-export default function Page() {
-  const [searchQuery, setSearchQuery] = useState("");
+interface User {
+  id: string;
+  username: string;
+  profilePicture: string
+}
+
+const DEFAULT_PROFILE_PICTURE = "https://via.placeholder.com/100";
+
+export default function SearchPage() {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [users, setUsers] = useState<User[]>([]);
+const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const router = useRouter();
 
-  const filteredUsers = userSearch.filter((user) =>
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserId(user.uid);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const fetchUsers = async () => {
+      try {
+        const usersCollection = collection(db, "users");
+        const usersSnapshot = await getDocs(usersCollection);
+        const usersList = usersSnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            username: doc.data().username,
+            profilePicture:
+              doc.data().profilePicture || DEFAULT_PROFILE_PICTURE,
+          }))
+          .filter((user) => user.id !== currentUserId);
+
+        setUsers(usersList);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [currentUserId]);
+
+  const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -29,28 +77,33 @@ export default function Page() {
         onChangeText={setSearchQuery}
       />
 
-      <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.userItem}
-            onPress={() =>
-              router.push({
-                pathname: `/profile/[id]`,
-                params: {
-                  id: item.id,
-                  username: item.username,
-                  avatar: item.avatar,
-                },
-              })
-            }
-          >
-            <Image source={{ uri: item.avatar }} style={styles.avatar} />
-            <Text style={styles.username}>{item.username}</Text>
-          </TouchableOpacity>
-        )}
-      />
+      {searchQuery.length > 0 && (
+        <FlatList
+          data={filteredUsers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.userItem}
+              onPress={() =>
+                router.push({
+                  pathname: `/profile/[id]`,
+                  params: {
+                    id: item.id,
+                    username: item.username,
+                    profilePicture: item.profilePicture,
+                  },
+                })
+              }
+            >
+              <Image
+                source={{ uri: item.profilePicture }}
+                style={styles.avatar}
+              />
+              <Text style={styles.username}>{item.username}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </View>
   );
 }

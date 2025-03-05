@@ -47,7 +47,6 @@ export default function Page() {
   useEffect(() => {
     if (!userId) return;
 
-    // FETCH USER PROFILE
     const fetchUserProfile = async () => {
       try {
         console.log("Fetching user profile for UID:", userId);
@@ -71,7 +70,6 @@ export default function Page() {
       }
     };
 
-    // FETCH USER POSTS
     const postsRef = collection(db, "posts");
     const q = query(postsRef, where("createdBy", "==", userId));
 
@@ -141,12 +139,10 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-
     marginVertical: 30,
   },
   username: {
     fontSize: 20,
-
     marginBottom: 30,
   },
   postImage: {
