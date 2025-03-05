@@ -55,34 +55,17 @@ export default function Page() {
         const userRef = doc(db, "users", userId);
         const userSnap = await getDoc(userRef);
 
-        let defaultUsername = auth.currentUser?.email
+        let username = auth.currentUser?.email
           ? auth.currentUser.email.split("@")[0]
           : "User";
         let profileImage = "";
 
         if (userSnap.exists()) {
-          const userData = userSnap.data();
-          console.log("Fetched Firestore User Data:", userData);
-
-          // Ensure username is never an empty string
-          const storedUsername =
-            userData.username && userData.username.trim() !== ""
-              ? userData.username
-              : defaultUsername;
-
-          profileImage = userData.profilePicture || "";
-
-          console.log("Final Username:", storedUsername);
-          console.log("Final Profile Image:", profileImage);
-
-          setProfile({ username: storedUsername, profileImage });
-        } else {
-          console.log(
-            "No user profile found, using default username:",
-            defaultUsername
-          );
-          setProfile({ username: defaultUsername, profileImage: "" });
+          username = userSnap.data().username || username;
+          profileImage = userSnap.data().profilePicture || "";
         }
+
+        setProfile({ username, profileImage });
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }

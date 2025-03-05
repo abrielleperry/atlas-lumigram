@@ -81,10 +81,10 @@ export default function Page() {
     await setDoc(
       doc(db, "users", userId),
       {
-        username: finalUsername, // ✅ Ensure a valid username is always saved
+        username: finalUsername,
         profilePicture: imageUrl,
       },
-      { merge: true } // ✅ Prevents overwriting other fields
+      { merge: true }
     );
 
     console.log("Profile saved successfully!");
