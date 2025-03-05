@@ -13,13 +13,15 @@ export function useImagePicker() {
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (result.assets && result.assets.length > 0) {
       setImage(result.assets[0].uri);
+    } else {
+      console.log("Image picking was canceled or failed.");
     }
   }
 

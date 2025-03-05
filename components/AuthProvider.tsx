@@ -12,7 +12,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { auth } from "@/firebaseConfig";
+import { auth, db } from "@/firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 
 const AuthContext = createContext<AuthContextType>({ register, logout, login });
 
@@ -25,8 +26,29 @@ type AuthContextType = {
 
 export const useAuth = () => useContext<AuthContextType>(AuthContext);
 
-function register(email: string, password: string) {
-  return createUserWithEmailAndPassword(auth, email, password);
+async function register(
+  email: string,
+  password: string
+): Promise<UserCredential> {
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  const userId = userCredential.user.uid;
+
+  // generate default "username" in "users" collection from email prefix
+  const defaultUsername = email.split("@")[0];
+
+  //  store "username" and "profilePicture" in "users" collection
+  await setDoc(doc(db, "users", userId), {
+    username: defaultUsername,
+    profilePicture: "",
+  });
+
+  console.log("User registered and Firestore document created:", userId);
+
+  return userCredential;
 }
 
 function logout() {

@@ -13,7 +13,7 @@ export default function Page() {
   const auth = useAuth();
   const [caption, setCaption] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const { image, openImagePicker, reset } = useImagePicker();
+  const { image, openImagePicker, reset} = useImagePicker();
 
   async function save() {
     if (!image) return;

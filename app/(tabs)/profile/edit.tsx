@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,18 +8,37 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import { auth, db, storage } from "@/firebaseConfig";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export default function Page() {
   const router = useRouter();
-  const { username: initialUsername, profileImage: initialProfileImage } =
-    useLocalSearchParams();
+  const userId = auth.currentUser?.uid;
 
-  const [username, setUsername] = useState(initialUsername as string);
-  const [profileImage, setProfileImage] = useState(
-    initialProfileImage as string
-  );
+  const [username, setUsername] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchProfile = async () => {
+      try {
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          setUsername(userSnap.data().username || "");
+          setProfileImage(userSnap.data().profilePicture || "");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [userId]);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -34,21 +53,58 @@ export default function Page() {
     }
   };
 
-  const saveProfile = () => {
+  const uploadImage = async (uri: string) => {
+    if (!userId) return;
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(storage, `profilePictures/${userId}`);
+    await uploadBytes(storageRef, blob);
+    return getDownloadURL(storageRef);
+  };
+
+  const saveProfile = async () => {
+    if (!userId) return;
+
+    let finalUsername =
+      username.trim() !== ""
+        ? username
+        : auth.currentUser?.email?.split("@")[0] || "User";
+
+    let imageUrl = profileImage;
+    if (profileImage.startsWith("file://")) {
+      console.log("Uploading new profile image...");
+      imageUrl = await uploadImage(profileImage);
+    }
+
+    console.log("Saving user data to Firestore:", { finalUsername, imageUrl });
+
+    await setDoc(
+      doc(db, "users", userId),
+      {
+        username: finalUsername, // ✅ Ensure a valid username is always saved
+        profilePicture: imageUrl,
+      },
+      { merge: true } // ✅ Prevents overwriting other fields
+    );
+
+    console.log("Profile saved successfully!");
+
     router.replace({
       pathname: "/profile",
-      params: {
-        username,
-        profileImage,
-      },
+      params: { refresh: new Date().getTime() },
     });
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={pickImage}>
-        <Image source={{ uri: profileImage }} style={styles.profileImage} />
+        {profileImage ? (
+          <Image source={{ uri: profileImage }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.profileImagePlaceholder} />
+        )}
       </TouchableOpacity>
+
       <TextInput
         style={styles.input}
         value={username}
@@ -97,5 +153,14 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#FFFFFF",
     fontSize: 16,
+  },
+  profileImagePlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
   },
 });
